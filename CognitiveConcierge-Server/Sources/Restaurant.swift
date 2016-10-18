@@ -18,6 +18,7 @@ import Foundation
 import SwiftyJSON
 import KituraNet
 import LoggerAPI
+import AlchemyLanguage
 
 class Restaurant {
 
@@ -54,7 +55,7 @@ class Restaurant {
         self.positiveSentiments = []
         self.website = website
     }
-
+    
     func populateWatsonKeywords(_ completion: @escaping ( Array<String>)->(), failure: @escaping (String) -> Void) {
         //append reviews from restaurant into a string to pass to watson
         var reviewStrings = ""
@@ -62,12 +63,7 @@ class Restaurant {
             reviewStrings.append(review)
             reviewStrings.append(" ")
         }
-        let path = "/calls/text/TextGetRankedKeywords"
-        var requestOptions:[ClientRequest.Options] = []
-        requestOptions.append(.method("POST"))
-        requestOptions.append(.schema("https://"))
-        requestOptions.append(.hostname("gateway-a.watsonplatform.net"))
-        requestOptions.append(.path(path))
+        
         var watsonAPIKey = ""
         
         do {
@@ -82,45 +78,31 @@ class Restaurant {
             //no configuration file.
         }
 
-        let req = HTTP.request(requestOptions) { resp in
-            if let resp = resp, resp.statusCode == HTTPStatusCode.OK {
-                do {
-                    var body = Data()
-                    try resp.readAllData(into: &body)
-                    let response = JSON(data: body)
-                    for (_, keyword):(String, JSON) in response["keywords"] {
-                        if let keytext = keyword["text"].string {
-                            if let keySentiment = keyword["sentiment"]["type"].string {
-                                if keySentiment == "negative" {
-                                    self.negativeSentiments.append(keytext)
-                                } else if keySentiment == "positive" {
-                                    self.positiveSentiments.append(keytext)
-                                }
-
+        let alchemyLanguage = AlchemyLanguage(apiKey: watsonAPIKey)
+        
+        alchemyLanguage.getRankedKeywords(forText: reviewStrings, sentiment: QueryParam.Included,
+                                          failure: { error in print (error)},
+                                          success: { response in
+            
+            if let keywords = response.keywords {
+                for keyword in keywords {
+                    if let text = keyword.text {
+                        if let keySentiment = keyword.sentiment?.type {
+                            if keySentiment == "negative" {
+                                self.negativeSentiments.append(keyword.text!)
+                            } else if keySentiment == "positive" {
+                                self.positiveSentiments.append(keyword.text!)
                             }
-                            let wordsArray = keytext.components(separatedBy: " ")
-                            for word in wordsArray {
-                                self.keywords.append(word)
-                            }
-                        } else {
-                            print ("key: text does not exist in review. Skipping review: \(response["keywords"])")
-                            break
+                        }
+                        let wordsArray = text.components(separatedBy: " ")
+                        for word in wordsArray {
+                            self.keywords.append(word)
                         }
                     }
-                    completion(self.keywords)
-                } catch {
-                    //bad JSON data
-                    failure("failed to parse review JSON correctly")
                 }
-            } else {
-                if let resp = resp {
-                    //request failed
-                    print (resp.statusCode)
-                }
+                completion(self.keywords)
             }
-        }
-        req.write(from: "apikey=" + watsonAPIKey + "&outputMode=json&sentiment=1&text=" + reviewStrings)
-        req.end()
+        })
     }
 
     //increment the match score by 1
