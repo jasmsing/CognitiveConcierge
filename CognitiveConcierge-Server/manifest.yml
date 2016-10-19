@@ -13,7 +13,7 @@ declared-services:
     label: alchemy_api
     plan: free
 applications:
-- name: CognitiveConcierge
+- name: CognitiveConcierge-test
   random-route: true
   memory: 512M
   disk_quota: 1024M

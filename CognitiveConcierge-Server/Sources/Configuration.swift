@@ -21,7 +21,7 @@ import CloudFoundryEnv
 
 struct Constants {
     static var googleAPIKey = "INSERT_GOOGLE_API_KEY_HERE"
-    static var location = "30.27,-97.74"
+    static var location = "36.11,-115.17"
 }
 
 struct ConfigurationError : LocalizedError {
@@ -31,7 +31,10 @@ struct ConfigurationError : LocalizedError {
 func getConfiguration(configFile: String, serviceName: String) throws -> Service {
     var appEnv: AppEnv
     do {
+        Log.verbose("Using configuration from path: \(configFile)")
         let path = getAbsolutePath(relativePath: "/\(configFile)", useFallback: false)
+        Log.verbose("Found path: \(path)")
+
         if path != nil {
             let data = try Data(contentsOf: URL(fileURLWithPath: path!))
             let configJson = JSON(data: data)
