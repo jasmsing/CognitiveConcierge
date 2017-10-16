@@ -46,7 +46,7 @@ You can deploy the server application using any one of the following ways:
 ### a) Using the Deploy to Bluemix button
 Clicking on the button below creates a Bluemix DevOps Toolchain and deploys this application to Bluemix. The `manifest.yml` file [included in the repo] is parsed to obtain the name of the application, configuration details, and the list of services that should be provisioned. For further details on the structure of the `manifest.yml` file, see the [Cloud Foundry documentation](https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html#minimal-manifest).
 
-[![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/IBM/CognitiveConcierge.git)
+[![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://local.dev-console.stage1.bluemix.net:3100/devops/setup/deploy?repository=https://github.com/IBM/CognitiveConcierge.git)
 
 Once deployment to Bluemix is completed, you can view the deployed application and services from your bluemix account.
 
